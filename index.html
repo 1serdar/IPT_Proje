@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Oyunu - IPT Projesi</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column; /* Başlık ve tahtayı dikey sıralamak için */
+            justify-content: flex-start; /* İçeriği yukarıdan başlatmak için */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            width: 100%;
+            text-align: center;
+            margin: 40px 0 20px 0; /* Üstte ve altta boşluk bırak */
+            font-size: 2em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            border: 5px solid #333;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            background-color: white; /* Tahtanın içini beyaz yapalım */
+        }
+
+        .sudoku-block {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            border: 2px solid #333;
+            height: 150px;
+            width: 150px;
+            box-sizing: border-box;
+        }
+
+        .sudoku-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            height: 50px;
+            width: 50px;
+            box-sizing: border-box;
+        }
+        
+        .sudoku-block:nth-child(3n + 1),
+        .sudoku-block:nth-child(3n + 2),
+        .sudoku-block:nth-child(3n) {
+            border: 2px solid #333;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        Sudoku Oyunu - IPT Projesi
+    </header>
+
+    <div id="sudoku-container" class="sudoku-board">
+    </div>
+
+    <script>
+        const container = document.getElementById('sudoku-container');
+
+        for (let blockIndex = 0; blockIndex < 9; blockIndex++) {
+            const block = document.createElement('div');
+            block.className = 'sudoku-block';
+
+            for (let cellIndex = 0; cellIndex < 9; cellIndex++) {
+                const cell = document.createElement('div');
+                cell.className = 'sudoku-cell';
+                block.appendChild(cell);
+            }
+
+            container.appendChild(block);
+        }
+    </script>
+
+</body>
+</html>
