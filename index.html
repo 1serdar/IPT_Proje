@@ -1,92 +1,322 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sudoku Oyunu - IPT Projesi</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column; /* Başlık ve tahtayı dikey sıralamak için */
-            justify-content: flex-start; /* İçeriği yukarıdan başlatmak için */
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Sudoku Oyunu - IPT Projesi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        header {
-            width: 100%;
-            text-align: center;
-            margin: 40px 0 20px 0; /* Üstte ve altta boşluk bırak */
-            font-size: 2em;
-            font-weight: 700;
-            color: #333;
-        }
+<style>
+body{
+    margin:0;
+    min-height:100vh;
+    background:#f0f0f0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    font-family:Arial,sans-serif
+}
+h1{margin:15px 0 5px}
 
-        .sudoku-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            border: 5px solid #333;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            background-color: white; /* Tahtanın içini beyaz yapalım */
-        }
+.info{
+    background:#c62828;
+    color:white;
+    padding:6px 16px;
+    border-radius:6px;
+    margin-bottom:10px;
+    font-size:16px
+}
 
-        .sudoku-block {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            border: 2px solid #333;
-            height: 150px;
-            width: 150px;
-            box-sizing: border-box;
-        }
+.board{
+    display:grid;
+    grid-template-columns:repeat(9,50px);
+    grid-template-rows:repeat(9,50px);
+    border:3px solid #000;
+    background:white
+}
 
-        .sudoku-cell {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            height: 50px;
-            width: 50px;
-            box-sizing: border-box;
-        }
-        
-        .sudoku-block:nth-child(3n + 1),
-        .sudoku-block:nth-child(3n + 2),
-        .sudoku-block:nth-child(3n) {
-            border: 2px solid #333;
-        }
+.cell{
+    border:1px solid #aaa;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    cursor:pointer
+}
 
-    </style>
+.cell.fixed{background:#e6e6e6;font-weight:bold}
+.cell.user{color:#0b7504}
+.cell.error{color:red}
+
+.cell.selected{background:#6fa8ff}
+.cell.related{background:#e8f2ff}
+.cell.same{background:#6fa8ff}
+
+.cell:nth-child(3n){border-right:2px solid #000}
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54){
+    border-bottom:2px solid #000
+}
+
+.numbers,.win{
+    width:420px;
+    min-height:60px;
+    margin:20px 0;
+    display:grid;
+    grid-template-columns:repeat(9,40px);
+    gap:10px;
+    justify-content:center;
+    align-items:center
+}
+
+.number{
+    background:#000;
+    color:white;
+    text-align:center;
+    padding:10px 0;
+    border-radius:6px;
+    cursor:pointer;
+    user-select:none
+}
+
+.hidden{visibility:hidden}
+
+.win{
+    grid-template-columns:1fr;
+    font-size:20px;
+    font-weight:bold;
+    color:green;
+    text-align:center
+}
+</style>
 </head>
+
 <body>
-    <header>
-        Sudoku Oyunu - IPT Projesi
-    </header>
 
-    <div id="sudoku-container" class="sudoku-board">
-    </div>
+<h1>Sudoku Oyunu - IPT Projesi</h1>
+<div class="info">Hatalar: <span id="errors">0</span></div>
 
-    <script>
-        const container = document.getElementById('sudoku-container');
+<div id="board" class="board"></div>
+<div id="numbers" class="numbers"></div>
 
-        for (let blockIndex = 0; blockIndex < 9; blockIndex++) {
-            const block = document.createElement('div');
-            block.className = 'sudoku-block';
+<script>
+const puzzle=[
+[5,3,0,0,7,0,0,1,0],
+[6,0,0,1,9,5,0,0,0],
+[0,9,8,0,0,0,0,6,0],
+[8,0,0,0,6,0,0,0,3],
+[4,0,0,8,0,3,0,0,1],
+[7,0,0,0,2,0,0,0,6],
+[0,6,0,0,0,0,2,8,0],
+[0,0,0,4,1,9,0,0,5],
+[0,0,0,0,8,0,0,7,9]
+];
 
-            for (let cellIndex = 0; cellIndex < 9; cellIndex++) {
-                const cell = document.createElement('div');
-                cell.className = 'sudoku-cell';
-                block.appendChild(cell);
-            }
+const solution=[
+[5,3,4,6,7,8,9,1,2],
+[6,7,2,1,9,5,3,4,8],
+[1,9,8,3,4,2,5,6,7],
+[8,5,9,7,6,1,4,2,3],
+[4,2,6,8,5,3,7,9,1],
+[7,1,3,9,2,4,8,5,6],
+[9,6,1,5,3,7,2,8,4],
+[2,8,7,4,1,9,6,3,5],
+[3,4,5,2,8,6,1,7,9]
+];
 
-            container.appendChild(block);
+const board=document.getElementById("board");
+const numbersDiv=document.getElementById("numbers");
+const errorSpan=document.getElementById("errors");
+
+let selectedCell=null;
+let errors=0;
+const cells=[];
+const numberCount=Array(10).fill(0);
+const correctMap=new Map();
+
+puzzle.forEach((row,r)=>{
+    row.forEach((v,c)=>{
+        if(v && solution[r][c]===v){
+            numberCount[v]++;
         }
-    </script>
+    });
+});
+
+puzzle.forEach((row,r)=>{
+    row.forEach((val,c)=>{
+        const cell=document.createElement("div");
+        cell.className="cell";
+        cell.dataset.r=r;
+        cell.dataset.c=c;
+
+        if(val){
+            cell.textContent=val;
+            cell.classList.add("fixed");
+            correctMap.set(cell,true);
+        }else{
+            correctMap.set(cell,false);
+        }
+
+        cell.onclick=e=>{
+            e.stopPropagation();
+            selectCell(cell);
+        };
+
+        board.appendChild(cell);
+        cells.push(cell);
+    });
+});
+
+for(let i=1;i<=9;i++){
+    const n=document.createElement("div");
+    n.className="number";
+    n.textContent=i;
+    n.dataset.num=i;
+    n.onclick=e=>{
+        e.stopPropagation();
+        placeNumber(i);
+    };
+    numbersDiv.appendChild(n);
+}
+
+updateNumbers();
+document.body.onclick=()=>clearSelection();
+
+function selectCell(cell){
+    clearHighlights();
+    selectedCell=cell;
+
+    const r=cell.dataset.r;
+    const c=cell.dataset.c;
+
+    cells.forEach(x=>{
+        if(
+            x!==cell &&
+            (
+                x.dataset.r===r ||
+                x.dataset.c===c ||
+                (Math.floor(x.dataset.r/3)===Math.floor(r/3) &&
+                 Math.floor(x.dataset.c/3)===Math.floor(c/3))
+            )
+        ){
+            x.classList.add("related");
+        }
+    });
+
+    cell.classList.add("selected");
+
+    if(cell.textContent){
+        cells.forEach(x=>{
+            if(x.textContent===cell.textContent){
+                x.classList.add("same");
+            }
+        });
+    }
+}
+
+function placeNumber(num){
+    if(!selectedCell) return;
+    if(selectedCell.classList.contains("fixed")) return;
+
+    const r=selectedCell.dataset.r;
+    const c=selectedCell.dataset.c;
+    const prev=selectedCell.textContent;
+    const wasCorrect=correctMap.get(selectedCell);
+
+    if(prev==num){
+        if(wasCorrect) numberCount[num]--;
+        selectedCell.textContent="";
+        selectedCell.classList.remove("user","error");
+        correctMap.set(selectedCell,false);
+        updateNumbers();
+        selectCell(selectedCell);
+        return;
+    }
+
+    const isCorrect = solution[r][c]==num;
+
+    if(wasCorrect){
+        numberCount[prev]--;
+    }
+
+    selectedCell.textContent=num;
+    selectedCell.classList.add("user");
+
+    if(isCorrect){
+        selectedCell.classList.remove("error");
+        numberCount[num]++;
+        correctMap.set(selectedCell,true);
+    }else{
+        selectedCell.classList.add("error");
+        correctMap.set(selectedCell,false);
+        errors++;
+        errorSpan.textContent=errors;
+    }
+
+    updateNumbers();
+    selectCell(selectedCell);
+    checkWin();
+}
+
+/* 🔹 SADECE BURASI DEĞİŞTİ */
+function updateNumbers(){
+    document.querySelectorAll(".number").forEach(n=>{
+        const num=n.dataset.num;
+
+        if(numberCount[num]===9 && !n.classList.contains("hidden")){
+            n.animate([
+                { backgroundColor:"#333", transform:"scale(1)", opacity:1 },
+                { backgroundColor:"#4caf50", transform:"scale(1.15)", opacity:1 },
+                { backgroundColor:"#4caf50", transform:"scale(0.6)", opacity:0 }
+            ],{duration:400})
+            .onfinish=()=>n.classList.add("hidden");
+        }else if(numberCount[num]<9){
+            n.classList.remove("hidden");
+            n.style.backgroundColor="";
+            n.style.transform="";
+            n.style.opacity="";
+        }
+    });
+}
+
+function checkWin(){
+    if(document.querySelectorAll(".number.hidden").length===9){
+        numbersDiv.className="win";
+        numbersDiv.textContent="Tebrikler oyunu bitirdiniz";
+    }
+}
+
+function clearSelection(){
+    selectedCell=null;
+    clearHighlights();
+}
+
+function clearHighlights(){
+    cells.forEach(c=>{
+        c.classList.remove("selected","related","same");
+    });
+}
+
+document.addEventListener("keydown",e=>{
+    if(!selectedCell) return;
+
+    if(e.key>="1" && e.key<="9"){
+        placeNumber(Number(e.key));
+    }
+
+    if(e.key==="Backspace" || e.key==="Delete"){
+        if(selectedCell.classList.contains("fixed")) return;
+        const prev=selectedCell.textContent;
+        if(prev && correctMap.get(selectedCell)){
+            numberCount[prev]--;
+        }
+        selectedCell.textContent="";
+        selectedCell.classList.remove("user","error");
+        correctMap.set(selectedCell,false);
+        updateNumbers();
+        selectCell(selectedCell);
+    }
+});
+</script>
 
 </body>
 </html>
