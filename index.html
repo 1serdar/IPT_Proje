@@ -17,13 +17,30 @@ body{
 }
 h1{margin:15px 0 5px}
 
+.top-wrapper{
+    width:420px;
+    position:relative;
+    margin-bottom:10px
+}
+
 .info{
     background:#c62828;
     color:white;
     padding:6px 16px;
     border-radius:6px;
-    margin-bottom:10px;
-    font-size:16px
+    font-size:16px;
+    width:fit-content;
+    margin:0 auto
+}
+
+#difficulty{
+    position:absolute;
+    left:-10px; 
+    top:0;
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #aaa;
+    font-size:14px
 }
 
 .board{
@@ -93,7 +110,16 @@ h1{margin:15px 0 5px}
 <body>
 
 <h1>Sudoku Oyunu - IPT Projesi</h1>
-<div class="info">Hatalar: <span id="errors">0</span></div>
+
+<div class="top-wrapper">
+    <select id="difficulty">
+        <option>Kolay</option>
+        <option>Orta</option>
+        <option>Zor</option>
+    </select>
+
+    <div class="info">Hatalar: <span id="errors">0</span></div>
+</div>
 
 <div id="board" class="board"></div>
 <div id="numbers" class="numbers"></div>
@@ -257,16 +283,15 @@ function placeNumber(num){
     checkWin();
 }
 
-/* 🔹 SADECE BURASI DEĞİŞTİ */
 function updateNumbers(){
     document.querySelectorAll(".number").forEach(n=>{
         const num=n.dataset.num;
 
         if(numberCount[num]===9 && !n.classList.contains("hidden")){
             n.animate([
-                { backgroundColor:"#333", transform:"scale(1)", opacity:1 },
-                { backgroundColor:"#4caf50", transform:"scale(1.15)", opacity:1 },
-                { backgroundColor:"#4caf50", transform:"scale(0.6)", opacity:0 }
+                {backgroundColor:"#333",transform:"scale(1)",opacity:1},
+                {backgroundColor:"#4caf50",transform:"scale(1.15)",opacity:1},
+                {backgroundColor:"#4caf50",transform:"scale(0.6)",opacity:0}
             ],{duration:400})
             .onfinish=()=>n.classList.add("hidden");
         }else if(numberCount[num]<9){
