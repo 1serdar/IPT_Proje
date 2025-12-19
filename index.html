@@ -113,6 +113,11 @@ h1{margin:15px 0 5px}
     color:green;
     text-align:center
 }
+@media (max-width:400px){
+    h1{font-size:18px}
+    #difficulty{font-size:12px}
+    .info{font-size:14px}
+}
 
 </style>
 </head>
@@ -376,7 +381,6 @@ if(gameWon) return;
 
     updateNumbers();
     selectCell(selectedCell);
-    checkWin();
 }
 
 function updateNumbers(){
@@ -385,7 +389,7 @@ function updateNumbers(){
 
         if(numberCount[num]===9 && !n.classList.contains("hidden")){
             n.animate([
-                {backgroundColor:"#333",transform:"scale(1)",opacity:1},
+                {backgroundColor:"#000",transform:"scale(1)",opacity:1},
                 {backgroundColor:"#4caf50",transform:"scale(1.15)",opacity:1},
                 {backgroundColor:"#4caf50",transform:"scale(0.6)",opacity:0}
             ],{duration:400})
