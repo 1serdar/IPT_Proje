@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+    /* Sayfa genel ayarları:
+   Ortalanmış, mobil uyumlu, arka plan */
 body{
     margin:0;
     min-height:100vh;
@@ -18,8 +20,10 @@ body{
     box-sizing:border-box;
     overflow-x:hidden;
 }
+/* Oyun başlığı */
 h1{margin:15px 0 5px}
-
+/* Üst alan:
+   Zorluk seçimi ve hata sayacı burada */
 .top-wrapper{
     width:100%;
     max-width:360px;
@@ -27,6 +31,7 @@ h1{margin:15px 0 5px}
     margin-bottom:10px
 }
 
+/* Hata sayacı görünümü */
 .info{
     background:#c62828;
     color:white;
@@ -37,6 +42,7 @@ h1{margin:15px 0 5px}
     margin:0 auto
 }
 
+/* Zorluk seviyesi açılır menüsü */
 #difficulty{
     position:absolute;
     left:25px; 
@@ -46,7 +52,8 @@ h1{margin:15px 0 5px}
     border:1px solid #aaa;
     font-size:14px
 }
-
+/* Sudoku tahtası:
+   9x9 grid, kare oran korunur */
 .board{
     display:grid;
     width:100%;
@@ -57,7 +64,8 @@ h1{margin:15px 0 5px}
     border:3px solid #000;
     background:white
 }
-
+/* Her bir hücre:
+   Ortalanmış */
 .cell{
     border:1px solid #aaa;
     display:flex;
@@ -66,21 +74,21 @@ h1{margin:15px 0 5px}
     font-size:clamp(14px,3.5vw,20px);
     cursor:pointer
 }
-
+/* Sabit (değiştirilemeyen) hücreler -  Kullanıcının doğru girdiği sayılar - Yanlış girilen sayılar */
 .cell.fixed{background:#e6e6e6;font-weight:bold}
 .cell.user{color:#0b7504}
 .cell.error{color:red}
-
+/* Seçili hücre - Aynı satır, sütun veya kutudaki hücreler - Aynı sayı olan hücreler */
 .cell.selected{background:#6fa8ff}
 .cell.related{background:#e8f2ff}
 .cell.same{background:#6fa8ff}
-
+/* Alt kalın çizgiler */
 .cell:nth-child(3n){border-right:2px solid #000}
 .cell:nth-child(n+19):nth-child(-n+27),
 .cell:nth-child(n+46):nth-child(-n+54){
     border-bottom:2px solid #000
 }
-
+/* Sayı seçim alanı ve kazanma mesajı */
 .numbers,.win{
      width:100%;
     max-width:360px;
@@ -92,7 +100,7 @@ h1{margin:15px 0 5px}
     justify-content:center;
     align-items:center
 }
-
+/* Alt kısımdaki sayı butonları */
 .number{
     background:#000;
     color:white;
@@ -103,9 +111,9 @@ h1{margin:15px 0 5px}
     cursor:pointer;
     user-select:none
 }
-
+/* Tamamlanan sayıları gizlemek için */
 .hidden{visibility:hidden}
-
+/* Oyun bitince gösterilen mesaj */
 .win{
     grid-template-columns:1fr;
     font-size:20px;
@@ -113,6 +121,7 @@ h1{margin:15px 0 5px}
     color:green;
     text-align:center
 }
+/* ekran uyumu */
 @media (max-width:400px){
     h1{font-size:18px}
     #difficulty{font-size:12px}
@@ -140,6 +149,8 @@ h1{margin:15px 0 5px}
 <div id="numbers" class="numbers"></div>
 
 <script>
+    // Sudoku bulmacaları (başlangıç tahtaları) s1p,s2p,s3p
+    // Sudoku çözümleri (kontrol için) s1s,s2s,s3s
 const sudoku1Puzzle=[
 [0,0,4,9,6,2,3,0,0],
 [0,6,0,1,0,0,4,0,0],
@@ -205,22 +216,22 @@ const sudoku3Solution=[
 [9,7,6,5,3,1,2,8,4],
 [4,1,5,2,6,8,9,7,3],
 [3,8,2,7,9,4,1,6,5]];
-
+// Zorluklara göre puzzle ve çözümleri eşleştirir
 const puzzles = { Kolay: sudoku1Puzzle, Orta: sudoku2Puzzle, Zor: sudoku3Puzzle };
 const solutions = { Kolay: sudoku1Solution, Orta: sudoku2Solution, Zor: sudoku3Solution };
-
+// HTML elemanları
 const board=document.getElementById("board");
 const numbersDiv=document.getElementById("numbers");
 const errorSpan=document.getElementById("errors");
 const difficultySelect = document.getElementById("difficulty");
+// Oyun durumu değişkenleri
+let selectedCell=null; // Seçili hücre
+let errors=0;          // Hata sayısı
+let gameWon=false;     // Oyun bitiş durumu
 
-let selectedCell=null;
-let errors=0;
-let gameWon=false;
-
-const cells=[];
-const numberCount=Array(10).fill(0);
-const correctMap=new Map();
+const cells=[];// Tüm hücreler burada tutulur
+const numberCount=Array(10).fill(0);// Her sayıdan kaç tane doğru girildiğini tutar
+const correctMap=new Map();// Hücrenin doğru olup olmadığını tutar
 
 for(let r=0;r<9;r++){
     for(let c=0;c<9;c++){
@@ -252,7 +263,11 @@ for(let i=1;i<=9;i++){
     numbersDiv.appendChild(n);
 }
 
-function startNewGame(level){
+function startNewGame(level){// Yeni oyun başlatır (zorluk seviyesine göre)
+    // Oyun durumunu sıfırlar
+    // Tahtayı temizler
+    // Sabit hücreleri yerleştirir
+    // Hata sayısını ve sayaçları sıfırlar
 gameWon=false;
 
 numbersDiv.className = "numbers";
@@ -307,6 +322,9 @@ difficultySelect.addEventListener("change", e=>{
 startNewGame("Kolay");
 
 function selectCell(cell){
+// Tıklanan hücreyi seçer
+// Aynı satır, sütun ve 3x3 kutuyu vurgular
+// Aynı sayıları renklendirir
     clearHighlights();
     selectedCell=cell;
 
@@ -339,6 +357,10 @@ function selectCell(cell){
 }
 
 function placeNumber(num){
+// Seçili hücreye sayı yerleştirir
+// Doğruysa yeşil, yanlışsa kırmızı yapar
+// Hata sayısını artırır
+// Aynı sayı tekrar girilirse siler
 if(gameWon) return;
 
     if(!selectedCell) return;
@@ -384,6 +406,9 @@ if(gameWon) return;
 }
 
 function updateNumbers(){
+// Bir sayı 9 kez doğru yerleştirildiyse gizler
+// Tüm sayılar tamamlanınca oyunu bitirir
+
     document.querySelectorAll(".number").forEach(n=>{
         const num=n.dataset.num;
 
@@ -411,19 +436,20 @@ function updateNumbers(){
     });
 }
 
-
-function clearSelection(){
+function clearSelection(){// Seçili hücreyi kaldırır
     selectedCell=null;
     clearHighlights();
 }
 
-function clearHighlights(){
+function clearHighlights(){// Tüm vurguları kaldırır
     cells.forEach(c=>{
         c.classList.remove("selected","related","same");
     });
 }
 
 document.addEventListener("keydown",e=>{
+// Klavyeden 1-9 basılırsa sayı yerleştirir
+// Backspace/Delete ile hücreyi temizler
 if(gameWon) return;
 
     if(!selectedCell) return;
@@ -446,7 +472,7 @@ if(gameWon) return;
     }
 });
 
-document.addEventListener("click", e => {
+document.addEventListener("click", e => {// Tahta dışına tıklanınca seçimi kaldırır
     if (!board.contains(e.target) && !numbersDiv.contains(e.target) && e.target !== difficultySelect) {
         clearSelection();
     }
